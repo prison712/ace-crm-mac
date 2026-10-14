@@ -12,9 +12,9 @@ jobs:
       run:
         working-directory: desktop
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -34,7 +34,7 @@ jobs:
         id: version
         run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ACE-CRM-mac-${{ steps.version.outputs.value }}
           if-no-files-found: error

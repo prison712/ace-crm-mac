@@ -36,6 +36,8 @@ nsis:
 mac:
   icon: build/icon.png
   # 没有 Apple 开发者证书，用 ad-hoc 签名；否则 Apple 芯片会提示“已损坏”
+  # ad-hoc 没有 Team ID，entitlements 里必须有 disable-library-validation，原生模块才能加载
+  # entitlements.mac.plist 只能是纯 ASCII + LF 换行，macOS 解析器不认 CRLF 和中文注释
   identity: '-'
   artifactName: ACE-CRM-${version}-${arch}-mac.${ext}
   entitlements: build/entitlements.mac.plist
