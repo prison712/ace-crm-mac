@@ -1,0 +1,10 @@
+[
+  { "id":"hs01","hs_code":"7606.1200","name_cn":"铝合金矩形板片","name_en":"Aluminum alloy plates, sheets","category":"铝板/铝卷","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.形状;3.材质;4.规格;5.加工方法","notes":"厚度>0.2mm，铝板/铝卷适用" },
+  { "id":"hs02","hs_code":"7604.2910","name_cn":"铝合金异型材","name_en":"Aluminum alloy profiles","category":"铝型材","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.形状;3.材质;4.加工方法","notes":"光伏边框/建筑型材适用" },
+  { "id":"hs03","hs_code":"7308.9000","name_cn":"钢结构夹芯板","name_en":"Steel sandwich panels","category":"钢面夹芯板","tax_rebate":"9%","supervision":"无","declaration_elements":"1.品名;2.材质;3.芯材;4.用途","notes":"钢面岩棉板/PU板适用" },
+  { "id":"hs04","hs_code":"8418.9990","name_cn":"冷库用隔热板","name_en":"Cold storage insulation panels","category":"冷库板","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.用途;3.材质","notes":"PU冷库板/冷库门配件" },
+  { "id":"hs05","hs_code":"8541.4300","name_cn":"光伏组件","name_en":"Photovoltaic cells assembled","category":"光伏板","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.用途;3.功率","notes":"太阳能光伏板" },
+  { "id":"hs06","hs_code":"7610.9000","name_cn":"铝制结构体隔热板","name_en":"Aluminum structures, insulation panels","category":"铝隔热瓦","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.材质;3.用途","notes":"铝隔热瓦/铝卡扣墙板适用" },
+  { "id":"hs07","hs_code":"7210.7000","name_cn":"涂漆镀锌钢板","name_en":"Painted/coated steel sheet","category":"钢板/钢卷","tax_rebate":"13%","supervision":"无","declaration_elements":"1.品名;2.材质;3.涂层;4.规格","notes":"彩涂板基材" },
+  { "id":"hs08","hs_code":"7326.9090","name_cn":"铁制隔热瓦","name_en":"Galvanized iron roofing panel","category":"铁隔热瓦","tax_rebate":"9%","supervision":"无","declaration_elements":"1.品名;2.材质;3.用途;4.规格","notes":"铁长城隔热瓦" }
+]

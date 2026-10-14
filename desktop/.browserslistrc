@@ -1,0 +1,2 @@
+# Electron 22 = Chromium 108；构建降级避免依赖更新的 CSS 特性
+Chrome >= 108

@@ -1,0 +1,62 @@
+appId: com.zhending.acecrm
+productName: ACE CRM
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,yarn.lock}'
+  - '!tsconfig*.json'
+asarUnpack:
+  - resources/**
+  # 原生模块必须解出 asar，否则 Electron 无法加载 .node
+  - "**/*.node"
+extraResources:
+  # 海王出海同款 LINE Chrome 扩展（打包进安装包）
+  - from: resources/extensions
+    to: extensions
+  # 工作台静态页，客户端本地打开，只向服务器要接口数据
+  - from: ../workbench/dist
+    to: workbench
+win:
+  executableName: ACE-CRM
+  # 桌面/开始菜单快捷方式与 exe 图标；缺省会落到 Electron 默认 logo
+  icon: build/icon.ico
+nsis:
+  artifactName: ACE-CRM-${version}-setup.${ext}
+  shortcutName: ACE CRM系统
+  uninstallDisplayName: ACE CRM系统
+  createDesktopShortcut: always
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  include: build/installer.nsh
+mac:
+  icon: build/icon.png
+  # 没有 Apple 开发者证书，用 ad-hoc 签名；否则 Apple 芯片会提示“已损坏”
+  identity: '-'
+  artifactName: ACE-CRM-${version}-${arch}-mac.${ext}
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: ACE-CRM-${version}-${arch}.${ext}
+linux:
+  target:
+    - AppImage
+    - deb
+  maintainer: ACE CRM
+  category: Utility
+appImage:
+  artifactName: ACE-CRM-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: generic
+  url: http://8.219.152.183:3088/api/app/updates

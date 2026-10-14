@@ -1,0 +1,45 @@
+name: Build macOS client
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npm run build
+
+      # universal：一个安装包同时支持 Intel 和 Apple 芯片；原生模块按两种架构各编译一次
+      - name: Package dmg + zip
+        run: npx electron-builder --mac --universal --publish never -c.npmRebuild=true
+
+      - name: Read version
+        id: version
+        run: echo "value=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ACE-CRM-mac-${{ steps.version.outputs.value }}
+          if-no-files-found: error
+          path: |
+            desktop/dist/latest-mac.yml
+            desktop/dist/*.dmg
+            desktop/dist/*.zip
+            desktop/dist/*.blockmap

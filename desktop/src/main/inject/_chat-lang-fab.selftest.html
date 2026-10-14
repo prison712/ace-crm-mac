@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>chat-lang-fab selftest</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #111;
+        color: #eee;
+      }
+      #main header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+        padding: 0 12px;
+        background: #1f2c34;
+      }
+      #log {
+        white-space: pre-wrap;
+        padding: 12px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <header data-testid="conversation-header">
+        <span dir="auto">妈</span>
+        <div data-testid="conversation-header-right"></div>
+      </header>
+    </div>
+    <div id="log"></div>
+    <script>
+      window.__OMNI_TAB_GROUP_ID__ = "whatsapp";
+      window.__TEST_CALLS__ = [];
+      window.__OMNI_BRIDGE__ = {
+        invoke: function (action, payload) {
+          window.__TEST_CALLS__.push({ action: action, payload: payload });
+          if (action === "get_chat_lang") {
+            return Promise.resolve({
+              ok: true,
+              data: {
+                sendTargetLang: "en",
+                receiveTargetLang: "zh",
+                tabSendTargetLang: "en",
+                tabReceiveTargetLang: "zh",
+                overridden: false,
+                contactName: "妈",
+              },
+            });
+          }
+          if (action === "set_chat_lang") {
+            return Promise.resolve({
+              ok: true,
+              data: {
+                sendTargetLang: payload.send_target_lang,
+                receiveTargetLang: payload.receive_target_lang,
+                tabSendTargetLang: "en",
+                tabReceiveTargetLang: "zh",
+                overridden: true,
+                contactName: "妈",
+              },
+            });
+          }
+          if (action === "clear_chat_lang") {
+            return Promise.resolve({
+              ok: true,
+              data: {
+                sendTargetLang: "en",
+                receiveTargetLang: "zh",
+                tabSendTargetLang: "en",
+                tabReceiveTargetLang: "zh",
+                overridden: false,
+                contactName: "妈",
+              },
+            });
+          }
+          return Promise.resolve({ ok: true, data: {} });
+        },
+      };
+      function log(msg) {
+        document.getElementById("log").textContent += msg + "\n";
+      }
+      window.__SELFTEST__ = async function () {
+        var btn = document.getElementById("omni-chat-lang-btn");
+        if (!btn) throw new Error("button missing");
+        btn.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+        await new Promise(function (r) {
+          setTimeout(r, 50);
+        });
+        var panel = document.getElementById("omni-chat-lang-panel-root");
+        if (!panel) throw new Error("panel missing after open");
+        var ja = panel.querySelector('[data-omni-lang="ja"]');
+        if (!ja) throw new Error("ja option missing");
+        // 真实路径是 pointerdown（捕获阶段处理）；仅派发 click 无法覆盖该修复
+        ja.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true, cancelable: true, view: window }),
+        );
+        await new Promise(function (r) {
+          setTimeout(r, 120);
+        });
+        var setCalls = window.__TEST_CALLS__.filter(function (c) {
+          return c.action === "set_chat_lang";
+        });
+        if (!setCalls.length) throw new Error("set_chat_lang not called");
+        if (setCalls[0].payload.send_target_lang !== "ja") {
+          throw new Error("expected ja, got " + setCalls[0].payload.send_target_lang);
+        }
+        var badge = document.getElementById("omni-chat-lang-btn");
+        if (!badge || badge.textContent.indexOf("JA") < 0) {
+          throw new Error("badge not updated to JA: " + (badge && badge.textContent));
+        }
+        var status = document.getElementById("omni-chat-lang-panel-root");
+        if (!status || status.textContent.indexOf("已保存") < 0) {
+          throw new Error("status missing: " + (status && status.textContent));
+        }
+        log("SELFTEST_OK");
+        return "SELFTEST_OK";
+      };
+    </script>
+    <script src="./chat-lang-fab.js"></script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>chat-lang-fab platform mount</title>
+  </head>
+  <body>
+    <script>
+      window.__RESULTS__ = [];
+      async function runCase(gid, html, expectBtn, expectFloat, pathName) {
+        var src = await fetch("/chat-lang-fab.js").then(function (r) {
+          return r.text();
+        });
+        history.replaceState(null, "", pathName || "/");
+        document.body.innerHTML = html + '<div id="log"></div>';
+        window.__OMNI_TAB_GROUP_ID__ = gid;
+        window.__OMNI_CHAT_LANG_FAB_API__ = null;
+        window.__OMNI_CHAT_LANG_FAB_TIMER__ && clearInterval(window.__OMNI_CHAT_LANG_FAB_TIMER__);
+        window.__OMNI_BRIDGE__ = {
+          invoke: function (action, payload) {
+            if (action === "get_chat_lang") {
+              return Promise.resolve({
+                ok: true,
+                data: {
+                  sendTargetLang: "en",
+                  receiveTargetLang: "zh",
+                  tabSendTargetLang: "en",
+                  tabReceiveTargetLang: "zh",
+                  overridden: false,
+                  contactName: "Alice",
+                },
+              });
+            }
+            return Promise.resolve({ ok: true, data: {} });
+          },
+        };
+        // 强制新版本安装
+        src = src.replace(/var VERSION = \d+/, "var VERSION = " + Date.now());
+        (0, eval)(src);
+        await new Promise(function (r) {
+          setTimeout(r, 100);
+        });
+        if (window.__OMNI_CHAT_LANG_FAB_API__) window.__OMNI_CHAT_LANG_FAB_API__.sync();
+        await new Promise(function (r) {
+          setTimeout(r, 100);
+        });
+        var btn = document.getElementById("omni-chat-lang-btn");
+        var floatHost = document.getElementById("omni-chat-lang-float-host");
+        var insideMain = !!(btn && btn.closest('[role="main"]'));
+        var ok = expectBtn ? !!btn : !btn;
+        if (expectFloat) {
+          ok = ok && !!floatHost && floatHost.contains(btn) && !insideMain;
+        }
+        window.__RESULTS__.push({
+          gid: gid,
+          ok: ok,
+          hasBtn: !!btn,
+          float: !!(floatHost && btn && floatHost.contains(btn)),
+          insideMain: insideMain,
+        });
+        return ok;
+      }
+
+      window.__PLATFORM_SELFTEST__ = async function () {
+        var messengerOk = await runCase(
+          "messenger",
+          '<div role="main"><div><h2>Alice</h2><div class="actions"><button>Call</button></div></div>' +
+            '<div contenteditable="true" role="textbox" data-lexical-editor="true" aria-label="发消息给Alice"></div></div>',
+          true,
+          true,
+          "/messages/t/111",
+        );
+        var facebookOk = await runCase(
+          "facebook",
+          // 故意没有 h2 人名，只靠 URL 线程 id（复现线上 FB 读不到人名）
+          '<div role="main"><div role="region" aria-label="串文编辑框">' +
+            '<div contenteditable="true" data-lexical-editor="true" role="textbox" aria-label="Aa"></div></div></div>',
+          true,
+          true,
+          "/messages/t/100065031601876",
+        );
+        var lineOk = await runCase(
+          "line",
+          '<div class="chatroomHeader-module__header__x">' +
+            '<div class="chatroomHeader-module__inner__x">' +
+            '<div class="chatroomHeader-module__name__x"><pre>Carol</pre></div>' +
+            '<div class="chatroomHeader-module__action_group__x"><button>More</button></div>' +
+            "</div></div>",
+          true,
+          false,
+        );
+        if (!messengerOk || !facebookOk || !lineOk) {
+          throw new Error("PLATFORM_FAIL " + JSON.stringify(window.__RESULTS__));
+        }
+        return "PLATFORM_OK";
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,296 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 主题：飞书 Lark 风格，与工作台 / 后台共用同一套色值 */
+@theme inline {
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+}
+
+:root {
+  /* Hex：Electron 22 / Chromium 108 不支持 oklch */
+  --radius: 6px;
+  --background: #f5f6f7;
+  --foreground: #1f2329;
+  --card: #ffffff;
+  --card-foreground: #1f2329;
+  --popover: #ffffff;
+  --popover-foreground: #1f2329;
+  --primary: #3370ff;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f3f5;
+  --secondary-foreground: #1f2329;
+  --muted: #f2f3f5;
+  --muted-foreground: #646a73;
+  --accent: #eff0f1;
+  --accent-foreground: #1f2329;
+  --destructive: #f54a45;
+  --border: #dee0e3;
+  --input: #d0d3d6;
+  --ring: #3370ff;
+  --sidebar: #f7f8fa;
+  --sidebar-foreground: #373c43;
+  --sidebar-accent: #e1eaff;
+  --sidebar-border: #e6e8eb;
+}
+
+.dark {
+  --background: #17181a;
+  --foreground: #ebebeb;
+  --card: #1f2023;
+  --card-foreground: #ebebeb;
+  --popover: #252629;
+  --popover-foreground: #ebebeb;
+  --primary: #4c88ff;
+  --primary-foreground: #ffffff;
+  --secondary: #2a2b2e;
+  --secondary-foreground: #e0e0e0;
+  --muted: #26272a;
+  --muted-foreground: #a6a6a6;
+  --accent: #2e2f33;
+  --accent-foreground: #ebebeb;
+  --destructive: #f76964;
+  --border: #333438;
+  --input: #3a3b40;
+  --ring: #4c88ff;
+  --sidebar: #131416;
+  --sidebar-foreground: #c9cacc;
+  --sidebar-accent: #1f2e4d;
+  --sidebar-border: #2a2b2e;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full overflow-hidden bg-background;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased text-[13px] leading-snug;
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "PingFang SC",
+      "Microsoft YaHei",
+      system-ui,
+      sans-serif;
+  }
+
+  .app-chrome {
+    @apply bg-background;
+  }
+
+  .app-drag {
+    -webkit-app-region: drag;
+  }
+
+  .app-no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  @keyframes omni-message-blink {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      opacity: 0.55;
+      box-shadow: 0 0 0 2px rgb(51 112 255 / 0.7);
+    }
+  }
+
+  .dark .omni-message-blink {
+    animation: omni-message-blink-dark 0.85s ease-in-out infinite;
+  }
+
+  @keyframes omni-message-blink-dark {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      opacity: 0.55;
+      box-shadow: 0 0 0 2px rgb(76 136 255 / 0.7);
+    }
+  }
+
+  .omni-message-blink {
+    animation: omni-message-blink 0.85s ease-in-out infinite;
+  }
+}
+
+/*
+ * Chromium 108（Electron 22）不支持 color-mix。
+ * Tailwind v4 会把 /透明度 包在 @supports(color-mix)，无支持时回退成实色或空规则。
+ * 必须写在 @layer 外，才能压过 Tailwind 的 utilities 层，且不被合并掉。
+ * 色值需与上方 :root / .dark 中的 primary、destructive 等保持一致。
+ */
+.bg-primary\/5 {
+  background-color: rgb(51 112 255 / 0.05);
+}
+.bg-primary\/10 {
+  background-color: rgb(51 112 255 / 0.1);
+}
+.bg-primary\/15 {
+  background-color: rgb(51 112 255 / 0.15);
+}
+.hover\:bg-primary\/90:hover {
+  background-color: rgb(51 112 255 / 0.9);
+}
+.ring-primary\/50 {
+  --tw-ring-color: rgb(51 112 255 / 0.5);
+}
+.ring-primary\/60 {
+  --tw-ring-color: rgb(51 112 255 / 0.6);
+}
+.border-primary\/30 {
+  border-color: rgb(51 112 255 / 0.3);
+}
+
+.bg-destructive\/5 {
+  background-color: rgb(245 74 69 / 0.05);
+}
+.hover\:bg-destructive\/15:hover {
+  background-color: rgb(245 74 69 / 0.15);
+}
+.hover\:bg-destructive\/90:hover {
+  background-color: rgb(245 74 69 / 0.9);
+}
+.border-destructive\/30 {
+  border-color: rgb(245 74 69 / 0.3);
+}
+
+.bg-card\/40 {
+  background-color: rgb(255 255 255 / 0.4);
+}
+.hover\:bg-accent\/70:hover {
+  background-color: rgb(239 240 241 / 0.7);
+}
+.hover\:bg-secondary\/80:hover {
+  background-color: rgb(242 243 245 / 0.8);
+}
+.bg-black\/50 {
+  background-color: rgb(0 0 0 / 0.5);
+}
+
+.dark .bg-primary\/5 {
+  background-color: rgb(76 136 255 / 0.05);
+}
+.dark .bg-primary\/10 {
+  background-color: rgb(76 136 255 / 0.1);
+}
+.dark .bg-primary\/15 {
+  background-color: rgb(76 136 255 / 0.15);
+}
+.dark .hover\:bg-primary\/90:hover {
+  background-color: rgb(76 136 255 / 0.9);
+}
+.dark .ring-primary\/50 {
+  --tw-ring-color: rgb(76 136 255 / 0.5);
+}
+.dark .ring-primary\/60 {
+  --tw-ring-color: rgb(76 136 255 / 0.6);
+}
+.dark .border-primary\/30 {
+  border-color: rgb(76 136 255 / 0.3);
+}
+.dark .bg-destructive\/5 {
+  background-color: rgb(247 105 100 / 0.05);
+}
+.dark .hover\:bg-destructive\/15:hover {
+  background-color: rgb(247 105 100 / 0.15);
+}
+.dark .hover\:bg-destructive\/90:hover {
+  background-color: rgb(247 105 100 / 0.9);
+}
+.dark .border-destructive\/30 {
+  border-color: rgb(247 105 100 / 0.3);
+}
+.dark .bg-card\/40 {
+  background-color: rgb(31 32 35 / 0.4);
+}
+.dark .hover\:bg-accent\/70:hover {
+  background-color: rgb(46 47 51 / 0.7);
+}
+.dark .hover\:bg-secondary\/80:hover {
+  background-color: rgb(42 43 46 / 0.8);
+}
+
+/* 左侧分组菜单：细滚动条（Electron 22 / Chromium 108） */
+.sidebar-group-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(55, 60, 67, 0.28) transparent;
+}
+
+.sidebar-group-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-group-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-group-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(55, 60, 67, 0.28);
+  border-radius: 999px;
+}
+
+.sidebar-group-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(55, 60, 67, 0.45);
+}
+
+.sidebar-group-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.dark .sidebar-group-scroll {
+  scrollbar-color: rgba(201, 202, 204, 0.28) transparent;
+}
+
+.dark .sidebar-group-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(201, 202, 204, 0.28);
+}
+
+.app-no-drag,
+.app-no-drag * {
+  -webkit-app-region: no-drag;
+}
+
+.dark .sidebar-group-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(201, 202, 204, 0.45);
+}

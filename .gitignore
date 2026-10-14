@@ -1,0 +1,8 @@
+node_modules/
+desktop/dist/
+desktop/out/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
