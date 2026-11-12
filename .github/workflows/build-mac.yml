@@ -6,8 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  # 诊断：确认账户 Actions 是否还能拿到 runner
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ubuntu runner ok" && uname -a
+
   build:
-    runs-on: macos-14
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: desktop
