@@ -1,10 +1,10 @@
-import { BrowserView, BrowserWindow } from 'electron'
+import { BrowserView } from 'electron'
 import { join } from 'path'
 import { getAuthScopeKey, loadAuthState } from './auth'
 import { loadSettings } from './settings'
 import { getShellMode, isUserSettingsOverlay } from './appMode'
 import { ensureWorkbenchOrigin } from './workbenchHost'
-import type { ViewBounds } from './browserViews'
+import { getMainWindow, type ViewBounds } from './browserViews'
 
 const WORKBENCH_LABEL = '__workbench__'
 /** Chromium: 导航被新请求取消，不算真正失败 */
@@ -90,7 +90,7 @@ function rememberBounds(bounds?: ViewBounds): ViewBounds | null {
  * @returns 临时坐标
  */
 function fallbackContentBounds(): ViewBounds | null {
-  const win = BrowserWindow.getAllWindows()[0]
+  const win = getMainWindow()
   if (!win) return null
   const [width, height] = win.getContentSize()
   return {
@@ -99,6 +99,25 @@ function fallbackContentBounds(): ViewBounds | null {
     width: Math.max(1, width - 44),
     height: Math.max(1, height - 32)
   }
+}
+
+/**
+ * 确保工作台视图挂在主窗口最上层；被社媒 show 误摘后只改 bounds 不够。
+ * @param bv 工作台视图
+ */
+function attachWorkbench(bv: BrowserView): boolean {
+  const win = getMainWindow()
+  if (!win) return false
+  const attached = win.getBrowserViews()
+  if (!attached.includes(bv)) {
+    win.addBrowserView(bv)
+  }
+  try {
+    win.setTopBrowserView(bv)
+  } catch {
+    /* electron 旧版无此 API */
+  }
+  return true
 }
 
 function applyBounds(bv: BrowserView, bounds?: ViewBounds): void {
@@ -168,18 +187,9 @@ export function getWorkbenchView(): BrowserView | null {
  */
 export function showWorkbenchView(bounds?: ViewBounds): { ok: boolean } {
   if (getShellMode() !== 'workbench' || isUserSettingsOverlay()) return { ok: true }
-  const win = BrowserWindow.getAllWindows()[0]
-  if (!win) return { ok: false }
+  if (!getMainWindow()) return { ok: false }
   const bv = ensureView()
-  const attached = win.getBrowserViews()
-  if (!attached.includes(bv)) {
-    win.addBrowserView(bv)
-  }
-  try {
-    win.setTopBrowserView(bv)
-  } catch {
-    /* electron 旧版无此 API */
-  }
+  if (!attachWorkbench(bv)) return { ok: false }
   applyBounds(bv, bounds)
   void loadWorkbench(bv)
   return { ok: true }
@@ -216,7 +226,7 @@ async function loadWorkbench(bv: BrowserView): Promise<void> {
 }
 
 export function hideWorkbenchView(): void {
-  const win = BrowserWindow.getAllWindows()[0]
+  const win = getMainWindow()
   if (win && view) {
     try {
       view.setBounds({ x: 0, y: 0, width: 0, height: 0 })
@@ -241,6 +251,8 @@ export function destroyWorkbenchView(): void {
 export function setWorkbenchBounds(bounds: ViewBounds): void {
   rememberBounds(bounds)
   if (getShellMode() !== 'workbench' || isUserSettingsOverlay() || !view) return
+  // 尺寸回调常在 setMode 之后；若视图已被摘掉，只 setBounds 会一直空白
+  attachWorkbench(view)
   applyBounds(view, bounds)
 }
 
@@ -265,10 +277,9 @@ export function reloadWorkbenchView(): { ok: boolean } {
   if (isUserSettingsOverlay()) return { ok: false }
   lastOkNavKey = null
   pendingNavKey = null
-  const win = BrowserWindow.getAllWindows()[0]
-  if (!win) return { ok: false }
+  if (!getMainWindow()) return { ok: false }
   const bv = view && !view.webContents.isDestroyed() ? view : ensureView()
-  if (!win.getBrowserViews().includes(bv)) win.addBrowserView(bv)
+  if (!attachWorkbench(bv)) return { ok: false }
   applyBounds(bv)
   void (async () => {
     try {

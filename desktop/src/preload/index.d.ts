@@ -97,6 +97,15 @@ export interface OmniApi {
   }) => Promise<{ ok: boolean }>
   /** 用户设置打开时拿开工作台和地图，避免原生页面盖住设置 */
   setUserSettingsOverlay: (open: boolean) => Promise<{ ok: boolean }>
+  /** 在耳机按钮旁弹出客服二维码，坐标相对于窗口内容区 */
+  showSupportCard: (anchor: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }) => Promise<{ ok: boolean }>
+  /** 打开 ChatGPT MCP 对接引导窗 */
+  showChatgptGuide: () => Promise<{ ok: boolean }>
   setWorkbenchBounds: (bounds: {
     x: number
     y: number

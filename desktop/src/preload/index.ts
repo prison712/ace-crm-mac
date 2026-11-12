@@ -104,6 +104,13 @@ const api = {
   }): Promise<{ ok: boolean }> => ipcRenderer.invoke('app:setMode', payload),
   setUserSettingsOverlay: (open: boolean): Promise<{ ok: boolean }> =>
     ipcRenderer.invoke('app:setUserSettingsOverlay', open),
+  showSupportCard: (anchor: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }): Promise<{ ok: boolean }> => ipcRenderer.invoke('support:showCard', anchor),
+  showChatgptGuide: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('chatgptGuide:show'),
   setWorkbenchBounds: (bounds: {
     x: number
     y: number

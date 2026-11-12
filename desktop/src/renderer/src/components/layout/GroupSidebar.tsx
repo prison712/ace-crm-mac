@@ -1,4 +1,5 @@
-import { ArrowLeft, Briefcase, Headset, MapPinned, MessageCircle, Moon, Sun, User } from "lucide-react";
+import { useRef } from "react";
+import { ArrowLeft, Briefcase, Headset, MapPinned, MessageCircle, Moon, Sparkles, Sun, User } from "lucide-react";
 import { useAppMode } from "@/context/ModeContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +31,24 @@ export function GroupSidebar() {
 
   const userSettingsOpen = settingsView?.type === "user";
   const { appMode, setAppMode } = useAppMode();
+  const supportRef = useRef<HTMLButtonElement>(null);
+
+  /**
+   * 把耳机按钮的位置交给主进程，在旁边打开客服二维码。
+   * 工作台是盖在页面上的原生视图，普通悬停层会被挡住。
+   * @returns void
+   */
+  function showSupportCard(): void {
+    const el = supportRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    void window.api.showSupportCard({
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+    });
+  }
 
   return (
     <aside className="flex h-full w-11 shrink-0 flex-col border-r border-sidebar-border bg-sidebar py-2">
@@ -153,32 +172,25 @@ export function GroupSidebar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  aria-label={t("sidebar.support")}
+                  aria-label="ChatGPT"
+                  onClick={() => void window.api.showChatgptGuide()}
                 >
-                  <Headset className="h-4 w-4" />
+                  <Sparkles className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent
-                side="right"
-                sideOffset={8}
-                className="border border-border bg-popover p-2 text-popover-foreground shadow-md"
-              >
-                <div className="flex flex-col items-center gap-1.5">
-                  <img
-                    src="./support-qr.png"
-                    alt={t('license.supportQrAlt')}
-                    className="h-40 w-40 object-contain"
-                    draggable={false}
-                    onError={(e) => {
-                      e.currentTarget.remove()
-                    }}
-                  />
-                  <span className="text-[10px] text-muted-foreground">
-                    {t('license.supportHint')}
-                  </span>
-                </div>
-              </TooltipContent>
+              <TooltipContent side="right">ChatGPT 对接</TooltipContent>
             </Tooltip>
+            <Button
+              ref={supportRef}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={t("sidebar.support")}
+              onMouseEnter={showSupportCard}
+              onClick={showSupportCard}
+            >
+              <Headset className="h-4 w-4" />
+            </Button>
 
             <Tooltip>
               <TooltipTrigger asChild>

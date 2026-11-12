@@ -95,6 +95,16 @@ export function setMainWindow(win: BrowserWindow | null): void {
   win.on('unmaximize', reapply)
 }
 
+/**
+ * 主窗口引用。工作台/地图挂载必须用这个，不能用 getAllWindows()[0]，
+ * 否则客服卡、地图独立窗等会抢走第一个窗口，工作台 BrowserView 挂错地方。
+ * @returns 主窗口；尚未创建或已销毁时为 null
+ */
+export function getMainWindow(): BrowserWindow | null {
+  if (!mainWindow || mainWindow.isDestroyed()) return null
+  return mainWindow
+}
+
 function normalizeBounds(bounds: ViewBounds): ViewBounds {
   return {
     x: Math.max(0, Math.round(bounds.x)),
@@ -1001,6 +1011,7 @@ export function showView(label: string, bounds?: ViewBounds): { ok: boolean; err
     const attached = mainWindow.getBrowserViews()
     const keepId = entry.view.webContents.isDestroyed() ? -1 : entry.view.webContents.id
     // 只摘掉「别的」视图；已是唯一挂载则不动，避免反复 remove/add 触发页面重载
+    // 工作台应先由 setMode/hideWorkbenchView 摘掉；此处若仍在，说明竞态，一并摘掉以免盖住社媒
     for (const bv of [...attached]) {
       try {
         if (!bv.webContents.isDestroyed() && bv.webContents.id === keepId) continue

@@ -72,13 +72,13 @@ export function AppShell({ inviteCode, onLogout }: AppShellProps): React.JSX.Ele
     }
   }, [state.selectedGroupId, t])
 
-  // 仅模式切换时 load 工作台；尺寸变化只改 bounds，避免重复 loadURL 触发 ERR_ABORTED
+  // 仅模式切换时 load 工作台；尺寸变化走 setWorkbenchBounds（内部会重挂，避免被社媒误摘后只改尺寸仍空白）
   useEffect(() => {
     void window.api.setAppMode({
       mode: appMode,
       bounds: contentBounds || undefined
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 故意不依赖 contentBounds
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 故意不依赖 contentBounds，避免 resize 反复 loadURL
   }, [appMode])
 
   useEffect(() => {
@@ -87,8 +87,7 @@ export function AppShell({ inviteCode, onLogout }: AppShellProps): React.JSX.Ele
   }, [contentBounds, appMode])
 
   useEffect(() => {
-    if (!userSettingsOpen) return
-    void window.api.setUserSettingsOverlay(true).catch(() => undefined)
+    void window.api.setUserSettingsOverlay(userSettingsOpen).catch(() => undefined)
   }, [userSettingsOpen])
 
   return (

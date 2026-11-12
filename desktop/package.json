@@ -1,6 +1,6 @@
 {
   "name": "smart-workbench-desktop",
-  "version": "1.0.55",
+  "version": "1.0.67",
   "description": "ACE CRM系统桌面端（工作台 + 社媒聊天 + 地图采集）",
   "main": "./out/main/index.js",
   "author": "ACE CRM",
@@ -53,7 +53,7 @@
     "@types/react-dom": "^19.1.5",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "44.4.3",
+    "electron": "^35.7.5",
     "electron-builder": "26.15.3",
     "electron-vite": "^2.3.0",
     "eslint": "^9.39.1",

@@ -49,7 +49,8 @@ export default defineConfig({
           view: resolve('src/preload/view.ts'),
           'line-view': resolve('src/preload/line-view.ts'),
           workbench: resolve('src/preload/workbench.ts'),
-          'maps-host': resolve('src/preload/maps-host.ts')
+          'maps-host': resolve('src/preload/maps-host.ts'),
+          'chatgpt-guide': resolve('src/preload/chatgpt-guide.ts')
         }
       }
     }

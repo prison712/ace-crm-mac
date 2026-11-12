@@ -91,7 +91,7 @@ function proxyFp(settings: ReturnType<typeof getSettings>): string {
 }
 
 /**
- * 功能：对 session 应用地图代理。
+ * 功能：对 session 应用地图代理。开了地图代理就走它，否则跟随 Windows 系统代理（与本机 Chrome 一致）。
  * @param ses Session
  * @returns void
  */
@@ -99,7 +99,8 @@ async function applyMapsSessionProxy(ses: Electron.Session): Promise<void> {
   const settings = getSettings()
   const rules = await ensureMapsProxy(settings)
   if (!rules) {
-    await ses.setProxy({ mode: 'direct' })
+    // 不能用 direct：国内直连谷歌会一直卡到超时
+    await ses.setProxy({ mode: 'system' })
     return
   }
   await ses.setProxy({ proxyRules: rules, proxyBypassRules: '<local>' })
@@ -446,9 +447,9 @@ export async function openEmailWindow(label: string, url: string): Promise<void>
     win.on('closed', () => {
       if (emailWindows.get(key) === win) emailWindows.delete(key)
     })
-    // 商家官网走本机直连。地图代理只给谷歌地图，套到官网经常打不开。
+    // 商家官网跟随系统代理，不套地图代理：地图代理只给谷歌地图，套到官网经常打不开。
     const ses = session.fromPartition(partition)
-    await ses.setProxy({ mode: 'direct' })
+    await ses.setProxy({ mode: 'system' })
   }
 
   if (win.isDestroyed() || win.webContents.isDestroyed()) {

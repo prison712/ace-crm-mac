@@ -2,14 +2,20 @@ import { BrowserWindow, ipcMain } from 'electron'
 import {
   loadAuthState,
   loginWithPassword,
-  logout,
   sanitizeAuthScopeKey,
   type AuthPublicState
 } from '../services/auth'
-import { destroyAllViews, hideAllViews } from '../services/browserViews'
-import { destroyWorkbenchView, hideWorkbenchView, setWorkbenchBounds, showWorkbenchView, reloadWorkbenchView } from '../services/workbenchView'
+import { hideAllViews } from '../services/browserViews'
+import { hideWorkbenchView, setWorkbenchBounds, showWorkbenchView, reloadWorkbenchView } from '../services/workbenchView'
 import { setShellMode, setUserSettingsOverlay } from '../services/appMode'
-import { destroyMapsViews, hideMapsViews } from '../services/maps/views'
+import { showSupportCard } from '../services/supportCard'
+import {
+  checkChatgptBridge,
+  getChatgptGuideConfig,
+  openChatgptSite,
+  showChatgptGuide
+} from '../services/chatgptGuide'
+import { hideMapsViews } from '../services/maps/views'
 import { emitAuthExpired as emitAuthExpiredEvent } from '../services/authEvents'
 import { broadcastSettings, loadSettings, saveSettings, type AppSettings } from '../services/settings'
 import {
@@ -84,6 +90,18 @@ export function registerIpcHandlers(): void {
     return { ok: true }
   })
 
+  /** 客服二维码用独立小窗，避免被工作台 BrowserView 盖住。 */
+  ipcMain.handle(
+    'support:showCard',
+    (event, anchor: { x: number; y: number; width: number; height: number }) =>
+      showSupportCard(event, anchor)
+  )
+
+  ipcMain.handle('chatgptGuide:show', (event) => showChatgptGuide(event))
+  ipcMain.handle('chatgptGuide:getConfig', () => getChatgptGuideConfig())
+  ipcMain.handle('chatgptGuide:checkBridge', () => checkChatgptBridge())
+  ipcMain.handle('chatgptGuide:open', () => openChatgptSite())
+
   /** 用户设置打开时摘掉原生页面，关闭后由 setMode 按当前版块挂回去。 */
   ipcMain.handle('app:setUserSettingsOverlay', (_event, open: boolean) => {
     const shown = Boolean(open)
@@ -132,11 +150,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('app:reloadWorkbench', () => reloadWorkbenchView())
 
   ipcMain.handle('auth:logout', () => {
-    // 先销毁社媒/工作台/地图视图，切断旧账号 Session；再清登录态
-    destroyAllViews()
-    destroyWorkbenchView()
-    destroyMapsViews()
-    logout()
+    emitAuthExpiredEvent()
     return { ok: true }
   })
 

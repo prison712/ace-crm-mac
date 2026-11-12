@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChatGPT 对接引导</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .wrap { padding: 14px 16px 18px; }
+    h1 { font-size: 16px; margin: 0 0 8px; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px;
+    }
+    .badge.off { background: #fef3c7; color: #92400e; }
+    .badge.ok { background: #d1fae5; color: #065f46; }
+    ol { padding-left: 18px; margin: 8px 0 12px; }
+    code, pre {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 11px;
+    }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px;
+      border-radius: 8px;
+      overflow: auto;
+      max-height: 180px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .primary { background: #10a37f; color: #fff; }
+    .ghost { background: #e2e8f0; color: #0f172a; }
+    .danger { background: transparent; color: #b91c1c; text-decoration: underline; }
+    .muted { color: #64748b; font-size: 12px; }
+    .hints { list-style: none; padding: 0; margin: 8px 0; }
+    .hints li {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .hints li:hover { border-color: #10a37f; }
+    #statusLine { margin: 6px 0 10px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>
+      ChatGPT 对接
+      <span id="badge" class="badge off">未连接</span>
+    </h1>
+    <p class="muted">通过本机 MCP 桥连接 CRM。未配置时按下面步骤；配好后可打开 ChatGPT 并复制常用话术。</p>
+    <div id="statusLine" class="muted">正在读取本机状态…</div>
+
+    <div id="guideBlock">
+      <ol>
+        <li>安装并登录桌面版 ChatGPT（需支持自定义 MCP）。</li>
+        <li>安装 Node.js ≥ 18，打开仓库 <code>mcp-bridge</code> 执行 <code>npm install</code>。</li>
+        <li>把下方 JSON 配进 ChatGPT → 设置 → MCP（把 args 路径改成你电脑上的绝对路径）。</li>
+        <li>重启 ChatGPT，试：「帮我扫描今日客户对话」。</li>
+      </ol>
+    </div>
+
+    <pre id="mcpJson"></pre>
+    <div class="row">
+      <button class="primary" id="btnCopy">复制 MCP 配置</button>
+      <button class="ghost" id="btnOpen">打开 ChatGPT</button>
+      <button class="ghost" id="btnCheck">检测本机桥</button>
+    </div>
+    <div class="row">
+      <button class="primary" id="btnMark">我已完成连接</button>
+      <button class="danger" id="btnClear">清除连接标记</button>
+    </div>
+
+    <p class="muted" style="margin-top:12px;font-weight:600">常用话术（点击复制）</p>
+    <ul class="hints">
+      <li data-text="帮我扫描分析今日客户对话，并给出跟进思路">今日对话扫描</li>
+      <li data-text="把某某客户的聊天和报价整理成摘要">客户摘要</li>
+      <li data-text="对本周客户重新排列优先级，先给建议">本周优先级</li>
+    </ul>
+  </div>
+  <script>
+    const KEY = 'ace_chatgpt_mcp_connected'
+    const mcpEl = document.getElementById('mcpJson')
+    const badge = document.getElementById('badge')
+    const statusLine = document.getElementById('statusLine')
+    let mcpText = ''
+
+    function setConnected(on) {
+      badge.textContent = on ? '已标记连接' : '未连接'
+      badge.className = 'badge ' + (on ? 'ok' : 'off')
+      try {
+        if (on) localStorage.setItem(KEY, '1')
+        else localStorage.removeItem(KEY)
+      } catch (_) {}
+    }
+
+    function refreshConnected() {
+      setConnected(localStorage.getItem(KEY) === '1')
+    }
+
+    async function loadConfig() {
+      try {
+        const data = await window.chatgptGuide.getConfig()
+        mcpText = data.mcpJson || ''
+        mcpEl.textContent = mcpText
+        statusLine.textContent =
+          '后端: ' + (data.backendUrl || '-') +
+          ' · 登录: ' + (data.loggedIn ? '是' : '否') +
+          ' · 本机后端: ' + (data.localBackend ? '是' : '否') +
+          ' · 写回允许: ' + (data.writeAllowed ? '是' : '否')
+        if (data.bridgePath) {
+          statusLine.textContent += ' · 桥路径已猜测'
+        }
+      } catch (e) {
+        statusLine.textContent = '读取失败: ' + (e && e.message ? e.message : e)
+        mcpEl.textContent = '{}'
+      }
+    }
+
+    document.getElementById('btnCopy').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(mcpText)
+        statusLine.textContent = '已复制 MCP 配置'
+      } catch (_) {
+        statusLine.textContent = '复制失败，请手动选中'
+      }
+    }
+    document.getElementById('btnOpen').onclick = () => window.chatgptGuide.openChatgpt()
+    document.getElementById('btnCheck').onclick = async () => {
+      statusLine.textContent = '检测中…'
+      try {
+        const r = await window.chatgptGuide.checkBridge()
+        statusLine.textContent = r.message || JSON.stringify(r)
+      } catch (e) {
+        statusLine.textContent = '检测失败: ' + (e && e.message ? e.message : e)
+      }
+    }
+    document.getElementById('btnMark').onclick = () => {
+      setConnected(true)
+      statusLine.textContent = '已标记为已连接'
+    }
+    document.getElementById('btnClear').onclick = () => {
+      setConnected(false)
+      statusLine.textContent = '已清除连接标记'
+    }
+    document.querySelectorAll('.hints li').forEach((li) => {
+      li.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(li.getAttribute('data-text') || '')
+          statusLine.textContent = '话术已复制'
+        } catch (_) {}
+      }
+    })
+
+    refreshConnected()
+    loadConfig()
+  </script>
+</body>
+</html>
